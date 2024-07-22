@@ -52,3 +52,4 @@ julia> f.(cids, Ref(cs))
 ```
 
 Note that here the type of the indices will determine the type of the final array of tuples.
+If you want individual access to the result dimensions, you can use `f.(cids, Ref(cs), n)` with the dimension `n`.
