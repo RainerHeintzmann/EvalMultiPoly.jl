@@ -1,18 +1,18 @@
 """
-    polynomial(::Val{0}, ::T1,  c::T2, ::Val{numvars}=Val(1)) where {NV, TS, T1 <: NTuple{NV, Integer}, T2 <: NTuple{TS, Float32}, numvars}
+    polynomial(::Val{0}, ::T1,  c::T2, ::Val{numvars}=Val(1)) where {NV, TS, T1 <: NTuple{NV}, T2 <: NTuple{TS}, numvars}
 
 Create a polynomial of order 0 with numvars variables.
 
 returned is a function that takes a tuple of variables and a tuple of coefficients and returns the value of the polynomial
     and the number of coefficients required (here 1).
 """
-function _polynomial(::Val{0}, ::T1,  c::T2, ::Val{numvars}=Val(1)) where {NV, TS, T1 <: NTuple{NV, Integer}, T2 <: NTuple{TS, Float32}, numvars}
+function _polynomial(::Val{0}, ::T1,  c::T2, ::Val{numvars}=Val(1)) where {NV, TS, T1 <: NTuple{NV}, T2 <: NTuple{TS}, numvars}
     # println("c: $(c) $(length(c))");
     return c[1], Base.tail(c)
 end  #, (t,c) -> ntuple(n->c[1], Val(numvars))
 
 """
-    polynomial(::Val{N}, t::T1, c::T2, ::Val{numvars}=Val(length(t)))::Float32 where {N, NV, TS, T1 <: NTuple{NV, Integer}, T2 <: NTuple{TS, Float32}, numvars}
+    polynomial(::Val{N}, t::T1, c::T2, ::Val{numvars}=Val(length(t))) where {N, NV, TS, T1 <: NTuple{NV}, T2 <: NTuple{TS}, numvars}
 
 Represents a polynomial of order N with numvars variables (also implicitely defined via the length of the NTuple `t`).
 Note that `numvars` is needed for the internal workings of the polynomial generator, but notmally not by the user.
@@ -36,7 +36,7 @@ Example:
   0.000089 seconds (3 allocations: 184 bytes)
 ```
 """
-@generated function _polynomial(::Val{N}, t::T1, c::T2, ::Val{numvars}=Val(length(t)))::Float32 where {N, NV, TS, T1 <: NTuple{NV, Integer}, T2 <: NTuple{TS, Float32}, numvars} 
+@generated function _polynomial(::Val{N}, t::T1, c::T2, ::Val{numvars}=Val(length(t))) where {N, NV, TS, T1 <: NTuple{NV}, T2 <: NTuple{TS}, numvars} 
     quote
         res = res = c[1]
         c = Base.tail(c)
@@ -48,14 +48,14 @@ Example:
     end
 end
 
-function polynomial(::Val{N}, t::T1, c::T2, ::Val{numvars}=Val(length(t)))::Float32 where {N, NV, TS, T1 <: NTuple{NV, Integer}, T2 <: NTuple{TS, Float32}, numvars} 
+function evalmultipoly(::Val{N}, t::T1, c::T2, ::Val{numvars}=Val(length(t))) where {N, NV, TS, T1 <: NTuple{NV}, T2 <: NTuple{TS}, numvars} 
     _polynomial(Val(N), t, c, Val(numvars))[1]
 end
 
 function get_multi_poly(::Val{numvars}, ::Val{N}) where {numvars, N}
     # cs_per_comp = ((numvars+1)^N)
     @info "Creating polynomials with $(numvars) variables of order , $(N). Required constants: $(numvars*((numvars+1)^N))"
-    p = (t,c) -> polynomial(Val(N), Tuple.(t), c)
+    p = (t,c) -> evalmultipoly(Val(N), Tuple.(t), c)
     # return p
     function mpol(t,c)#::NTuple{numvars, T} where T
         return ntuple(n->p(t, split_tuple(c, Val(numvars))[n]), Val(numvars))
