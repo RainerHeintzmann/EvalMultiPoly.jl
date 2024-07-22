@@ -52,22 +52,35 @@ function evalmultipoly(::Val{N}, t::T1, c::T2, ::Val{numvars}=Val(length(t))) wh
     _polynomial(Val(N), t, c, Val(numvars))[1]
 end
 
-function get_multi_poly(::Val{numvars}, ::Val{N}) where {numvars, N}
+function get_multi_poly(::Val{numvars}, ::Val{N}; verbose=false) where {numvars, N}
     # cs_per_comp = ((numvars+1)^N)
-    @info "Creating polynomials with $(numvars) variables of order , $(N). Required constants: $(numvars*((numvars+1)^N))"
+    if (verbose)
+        @info "Creating polynomials with $(numvars) variables of order , $(N). Required constants: $(get_num_multipoly_vars(Val(numvars), Val(N)))"
+    end
+    # this defines one dimension of the multivariate polynomial
     p = (t,c) -> evalmultipoly(Val(N), Tuple.(t), c)
     # return p
-    function mpol(t,c)#::NTuple{numvars, T} where T
-        return ntuple(n->p(t, split_tuple(c, Val(numvars))[n]), Val(numvars))
+    function mpol(t, c)#::NTuple{numvars, T} where T
+        return ntuple(n->p.(t, Ref(split_tuple(c, Val(numvars))[n])), Val(numvars))
     end
     return mpol # (t, c)->ntuple(n->p(t, c[1+(n-1)*((numvars+1)^N):n*((numvars+1)^N)]), Val(numvars))
     # return (t, c) -> Tuple(p(t,c[1+(n-1)*((numvars+1)^N):n*((numvars+1)^N)]) for n=1:numvars)
 end
 
+"""
+    get_num_poly_vars(::Val{numvars}, ::Val{N}) where {numvars, N}
+
+Get the number of coefficients required for a single polynomial of order N with numvars variables.
+"""
 function get_num_poly_vars(::Val{numvars}, ::Val{N}) where {numvars, N}
     return binomial(numvars+N, N) 
 end
 
+"""
+    get_num_multipoly_vars(::Val{numvars}, ::Val{N}) where {numvars, N}
+
+Get the number of coefficients required for a multipolynomial of order N with numvars variables.
+"""
 function get_num_multipoly_vars(::Val{numvars}, ::Val{N}) where {numvars, N}
     return numvars*get_num_poly_vars(Val(numvars), Val(N))
 end
