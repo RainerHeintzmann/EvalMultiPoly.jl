@@ -1,0 +1,4 @@
+name = "EvalMultiPoly"
+uuid = "c78649ec-f9ed-405e-be6d-0472f43586aa"
+authors = ["RainerHeintzmann <heintzmann@gmail.com>"]
+version = "0.1.0"
