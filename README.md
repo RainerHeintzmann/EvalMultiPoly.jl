@@ -41,7 +41,7 @@ The number of required coefficients for a single such expression can be obtained
 `get_num_poly_vars(Val(2), Val(2))`.
 
 The generator `get_multi_poly(::Val{numvars}, ::Val{N})` returns a function which can be applied to
-an array of cartesian indices (or `NTuples`) and returns an array of tuples.
+an array of cartesian indices (or `NTuples`) and returns an array of `NTuples`.
 
 ```julia
 julia> f = get_multi_poly(Val(2), Val(2); verbose=true)
