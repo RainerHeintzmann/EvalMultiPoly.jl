@@ -1,18 +1,18 @@
 """
-    polynomial(::Val{0}, ::T1,  c::T2, ::Val{cstart}=Val(1), ::Val{numvars}=Val(1)) where {NV, TS, T1 <: NTuple{NV, Integer}, T2 <: NTuple{TS, Float32}, cstart, numvars}
+    polynomial(::Val{0}, ::T1,  c::T2, ::Val{numvars}=Val(1)) where {NV, TS, T1 <: NTuple{NV, Integer}, T2 <: NTuple{TS, Float32}, numvars}
 
 Create a polynomial of order 0 with numvars variables.
 
 returned is a function that takes a tuple of variables and a tuple of coefficients and returns the value of the polynomial
     and the number of coefficients required (here 1).
 """
-function polynomial(::Val{0}, ::T1,  c::T2, ::Val{cstart}=Val(1), ::Val{numvars}=Val(1)) where {NV, TS, T1 <: NTuple{NV, Integer}, T2 <: NTuple{TS, Float32}, cstart, numvars}
+function _polynomial(::Val{0}, ::T1,  c::T2, ::Val{numvars}=Val(1)) where {NV, TS, T1 <: NTuple{NV, Integer}, T2 <: NTuple{TS, Float32}, numvars}
     # println("c: $(c) $(length(c))");
-    return c[cstart]
+    return c[1], Base.tail(c)
 end  #, (t,c) -> ntuple(n->c[1], Val(numvars))
 
 """
-    polynomial(::Val{N}, t::T1, c::T2, ::Val{cstart}=Val(1), ::Val{numvars}=Val(length(t)))::Float32 where {N, NV, TS, T1 <: NTuple{NV, Integer}, T2 <: NTuple{TS, Float32}, cstart, numvars}
+    polynomial(::Val{N}, t::T1, c::T2, ::Val{numvars}=Val(length(t)))::Float32 where {N, NV, TS, T1 <: NTuple{NV, Integer}, T2 <: NTuple{TS, Float32}, numvars}
 
 Represents a polynomial of order N with numvars variables (also implicitely defined via the length of the NTuple `t`).
 Note that `numvars` is needed for the internal workings of the polynomial generator, but notmally not by the user.
@@ -36,20 +36,21 @@ Example:
   0.000089 seconds (3 allocations: 184 bytes)
 ```
 """
-@generated function polynomial(::Val{N}, t::T1, c::T2, ::Val{cstart}=Val(1), ::Val{numvars}=Val(length(t)))::Float32 where {N, NV, TS, T1 <: NTuple{NV, Integer}, T2 <: NTuple{TS, Float32}, cstart, numvars} 
+@generated function _polynomial(::Val{N}, t::T1, c::T2, ::Val{numvars}=Val(length(t)))::Float32 where {N, NV, TS, T1 <: NTuple{NV, Integer}, T2 <: NTuple{TS, Float32}, numvars} 
     quote
-        c_start = cstart
-        res = c[c_start]
-        c_start += 1
-
+        res = res = c[1]
+        c = Base.tail(c)
         Base.Cartesian.@nexprs $numvars n -> begin
-            res += t[n] * polynomial(Val(N-1), t, c, Val(c_start), Val(n)) 
-            c_start += get_num_poly_vars(Val(n), Val(N-1)) # c_end + 1
+            p, c = _polynomial(Val(N-1), t, c, Val(n))
+            res += t[n] * p
         end
-        return res
+        return res, c
     end
 end
 
+function polynomial(::Val{N}, t::T1, c::T2, ::Val{numvars}=Val(length(t)))::Float32 where {N, NV, TS, T1 <: NTuple{NV, Integer}, T2 <: NTuple{TS, Float32}, numvars} 
+    _polynomial(Val(N), t, c, Val(numvars))[1]
+end
 
 function get_multi_poly(::Val{numvars}, ::Val{N}) where {numvars, N}
     # cs_per_comp = ((numvars+1)^N)
