@@ -12,7 +12,7 @@ julia> split_tuple(t, Val{2})
 ((1,2), (3,4), (5,6))
 ```
 """
-function split_tuple(t::NTuple{S,T},::Val{numvars}) where {S,T,numvars}
+function split_tuple(t::NTuple{S,T}, ::Val{numvars}) where {S,T,numvars}
     return ntuple(n->t[1+(n-1)*(S÷numvars):n*(S÷numvars)], Val(numvars))
 end
 
