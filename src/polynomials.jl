@@ -8,7 +8,8 @@ returned is a function that takes a tuple of variables and a tuple of coefficien
 """
 function _polynomial(::Val{0}, ::T1,  c::T2, ::Val{numvars}=Val(1)) where {NV, TS, T1 <: NTuple{NV}, T2 <: NTuple{TS}, numvars}
     # println("c: $(c) $(length(c))");
-    return c[1], Base.tail(c)
+    return c[1], tail_new(c)
+    # return c[1], Base.tail(c)
 end  #, (t,c) -> ntuple(n->c[1], Val(numvars))
 
 """
@@ -38,11 +39,12 @@ Example:
 """
 @generated function _polynomial(::Val{N}, t::T1, c::T2, ::Val{numvars}=Val(length(t))) where {N, NV, TS, T1 <: NTuple{NV}, T2 <: NTuple{TS}, numvars} 
     quote
-        res = res = c[1]
-        c = Base.tail(c)
+        res = c[1]
+        c = tail_new(c)
+        # c = Base.tail(c)
         Base.Cartesian.@nexprs $numvars n -> begin
             p, c = _polynomial(Val(N-1), t, c, Val(n))
-            res += t[n] * p
+            res += p * t[n]
         end
         return res, c
     end
@@ -59,11 +61,29 @@ function get_multi_poly(::Val{numvars}, ::Val{N}; verbose=false) where {numvars,
     # this defines one dimension of the multivariate polynomial
     p = (t,c) -> evalmultipoly(Val(N), NTuple(t), c)
 
-    function mpol(t, c)
-        return ntuple(n->p(t, split_tuple(c, Val(numvars))[n]), Val(numvars))
+    function mpol(t, c::NTuple{M, RT})::NTuple{numvars, RT} where {M, RT}
+        tt = Tuple(t)
+        cs = split_tuple(c, Val(numvars))
+
+        return ntuple(
+            n -> evalmultipoly(
+                Val(N),
+                tt,
+                cs[n]
+            ),
+            Val(numvars)
+        )
     end
-    function mpol(t, c, n) 
-        return p(t, split_tuple(c, Val(numvars))[n])
+
+    function mpol(t, c::NTuple{M, RT}, n)::RT where {M, RT}
+        tt = Tuple(t)
+        cs = split_tuple(c, Val(numvars))
+
+        return evalmultipoly(
+            Val(N),
+            tt,
+            cs[n]
+        )
     end
     return mpol 
 end
