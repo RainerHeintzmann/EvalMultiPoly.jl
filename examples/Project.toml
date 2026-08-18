@@ -1,0 +1,5 @@
+[deps]
+AllocationViewer = "e68bee48-ccd2-4290-be16-570446adc5cc"
+BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
+Chairmarks = "0ca39b1e-fe0b-4e98-acfc-b1656634c4de"
+EvalMultiPoly = "c78649ec-f9ed-405e-be6d-0472f43586aa"

@@ -6,5 +6,6 @@ export split_tuple
 
 include("utils.jl")
 include("polynomials.jl")
+include("get_coefficients.jl")
 
 end # module EvalMultiPoly
