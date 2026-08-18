@@ -50,7 +50,7 @@ Example:
     end
 end
 
-function evalmultipoly(::Val{N}, t::T1, c::T2, ::Val{numvars}=Val(length(t))) where {N, NV, TS, T1 <: NTuple{NV}, T2 <: NTuple{TS}, numvars} 
+function evalmultipoly(::Val{N}, t::T1, c::T2, ::Val{numvars}=Val(length(t)))::RT where {N, NV, TS, RT, T1 <: NTuple{NV}, T2 <: NTuple{TS, RT}, numvars} 
     _polynomial(Val(N), t, c, Val(numvars))[1]
 end
 
@@ -59,7 +59,7 @@ function get_multi_poly(::Val{numvars}, ::Val{N}; verbose=false) where {numvars,
         @info "Creating polynomials with $(numvars) variables of order $(N). Required constants: $(get_num_multipoly_vars(Val(numvars), Val(N)))"
     end
     # this defines one dimension of the multivariate polynomial
-    p = (t,c) -> evalmultipoly(Val(N), NTuple(t), c)
+    # p = (t,c) -> evalmultipoly(Val(N), NTuple(t), c)
 
     function mpol(t, c::NTuple{M, RT})::NTuple{numvars, RT} where {M, RT}
         tt = Tuple(t)
